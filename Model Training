@@ -1,0 +1,61 @@
+# Import necessary libraries
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+# Load your dataset (update with actual file path)
+df_base = pd.read_csv('/Users/Narges/Downloads/sample_Base.csv')  # Update with your actual file path
+
+# Separate features and target variable
+X = df_base.drop(columns=["fraud_bool"])  # Features
+y = df_base["fraud_bool"]  # Target
+
+# Convert categorical features to numerical (if any)
+categorical_cols = X.select_dtypes(include=['object']).columns
+label_encoders = {}
+
+for col in categorical_cols:
+    le = LabelEncoder()
+    X[col] = le.fit_transform(X[col])
+    label_encoders[col] = le
+
+# Feature Scaling
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split data into training and test sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+
+# Initialize models
+models = {
+    "Logistic Regression": LogisticRegression(random_state=42),
+    "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42)
+}
+
+# Training and Evaluation
+model_results = {}
+
+for name, model in models.items():
+    model.fit(X_train, y_train)  # Train the model
+    y_pred = model.predict(X_test)  # Make predictions
+    
+    # Calculate evaluation metrics
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred)
+    f1 = f1_score(y_test, y_pred)
+    
+    # Store the results
+    model_results[name] = {
+        "Accuracy": accuracy,
+        "Precision": precision,
+        "Recall": recall,
+        "F1 Score": f1
+    }
+
+# Convert results to DataFrame and display
+results_df = pd.DataFrame(model_results).T
+print("Model Performance Comparison:\n", results_df)
