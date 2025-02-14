@@ -1,0 +1,35 @@
+import pandas as pd
+import os
+
+# Define the correct folder path where your files are located
+folder_path = "/Users/Narges/Downloads/archive/"
+
+# List all CSV files in the folder
+csv_files = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
+
+# Create a dictionary to store DataFrames for each file
+dataframes = {}
+
+# Load each CSV file into a DataFrame
+for file in csv_files:
+    file_path = os.path.join(folder_path, file)
+    df = pd.read_csv(file_path)
+    dataframes[file] = df  # Store DataFrame with filename as key
+    print(f"Loaded {file} with shape {df.shape}")
+
+# Access and display the first few rows of the "Base.csv" file
+base_df = dataframes['Base.csv']
+print("Base.csv sample:\n", base_df.head())
+
+# Example: Take a 10% sample from the Base.csv file and save it as a new CSV
+sample_base_df = base_df.sample(frac=0.1, random_state=1)
+sample_base_df.to_csv('/Users/Narges/Downloads/archive/sample_Base.csv', index=False)
+print("Saved sample of Base.csv as 'sample_Base.csv'")
+
+# Example: Take a 10% sample from each of the other files and save them
+for file, df in dataframes.items():
+    if file != 'Base.csv':  # Skip Base.csv as we've already saved its sample
+        sample_df = df.sample(frac=0.1, random_state=1)
+        sample_file_path = os.path.join(folder_path, f"sample_{file}")
+        sample_df.to_csv(sample_file_path, index=False)
+        print(f"Saved sample of {file} as {sample_file_path}")
